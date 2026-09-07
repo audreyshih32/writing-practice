@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -6,12 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>英語發音教學評分系統 (雲端連動版)</title>
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     :root {
       --primary: #3498db;
       --success: #2ecc71;
       --warning: #f1c40f;
       --danger: #e74c3c;
       --purple: #8e44ad;
+      --orange: #e67e22;
+      --teal: #1abc9c;
       --dark: #2c3e50;
       --light-bg: #f8fafc;
       --border: #cbd5e1;
@@ -22,14 +27,31 @@
       background-color: #f0f4f8;
       color: var(--dark);
       margin: 0;
-      padding: 40px 20px;
+      padding: 30px 15px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* LINE / App 內建瀏覽器警告條 */
+    .inapp-warning {
+      display: none;
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 700px;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
     }
 
     .instructor-card {
       background: white;
-      padding: 35px;
+      padding: 30px 25px;
       border-radius: 20px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.08);
       width: 100%;
@@ -39,33 +61,101 @@
     h1 {
       text-align: center;
       color: var(--dark);
-      font-size: 26px;
-      margin-bottom: 25px;
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    /* 老師題庫管理區 */
+    .teacher-panel {
+      background: #eef6fb;
+      border: 1px solid #bee3f8;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .teacher-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-file-label {
+      background-color: var(--teal);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+
+    .btn-file-label:hover {
+      background-color: #16a085;
+    }
+
+    .btn-random {
+      background-color: var(--orange);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-random:hover {
+      background-color: #d35400;
+    }
+
+    .bank-status {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
     }
 
     /* 學生資訊輸入區 */
     .student-info-form {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
       background: var(--light-bg);
-      padding: 20px;
+      padding: 15px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      margin-bottom: 25px;
+      margin-bottom: 20px;
+      width: 100%;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
       text-align: left;
+      width: 100%;
     }
 
     .form-group label {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: var(--dark);
+      white-space: nowrap;
     }
 
     .form-group label::after {
@@ -74,36 +164,34 @@
     }
 
     .form-group input {
-      padding: 10px;
-      font-size: 15px;
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
       border: 1px solid var(--border);
       border-radius: 6px;
       outline: none;
-      transition: border-color 0.2s;
     }
 
     .form-group input:focus {
       border-color: var(--primary);
     }
 
-    /* 句子呈現區 */
     .sentence-box {
-      font-size: 24px;
-      line-height: 1.8;
-      padding: 25px;
+      font-size: 22px;
+      line-height: 1.6;
+      padding: 20px;
       background: var(--light-bg);
       border-radius: 12px;
       border: 2px solid #e2e8f0;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       text-align: left;
       word-wrap: break-word;
     }
 
-    /* 逐字狀態顏色定義 */
     .w-unit {
       display: inline-block;
-      margin: 0 4px;
-      padding: 2px 6px;
+      margin: 0 3px;
+      padding: 2px 5px;
       border-radius: 4px;
       font-weight: 500;
       transition: all 0.3s;
@@ -114,30 +202,29 @@
     .w-unit.wrong { color: white; background-color: var(--danger); }
     .w-unit.missing { color: white; background-color: var(--warning); }
 
-    /* 圖例說明 */
     .legend {
       display: flex;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 25px;
-      font-size: 14px;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      flex-wrap: wrap;
     }
 
-    .legend-item { display: flex; align-items: center; gap: 5px; }
-    .dot { width: 12px; height: 12px; border-radius: 3px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .dot { width: 10px; height: 10px; border-radius: 3px; }
 
-    /* 按鈕區 */
     .control-panel {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
     button {
-      padding: 12px 20px;
-      font-size: 15px;
+      padding: 10px 16px;
+      font-size: 14px;
       font-weight: 600;
       border: none;
       border-radius: 8px;
@@ -161,43 +248,65 @@
       cursor: not-allowed;
     }
 
-    /* 評分面板 */
     .score-board {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
       background: var(--light-bg);
-      padding: 20px;
+      padding: 15px;
       border-radius: 12px;
       border: 1px solid #e2e8f0;
       text-align: center;
     }
 
-    .score-card { padding: 10px; }
-    .score-num { font-size: 32px; font-weight: 800; margin-top: 5px; }
+    .score-card { padding: 5px; }
+    .score-num { font-size: 26px; font-weight: 800; margin-top: 4px; }
     .score-num.count { color: var(--purple); }
     .score-num.complete { color: var(--success); }
     .score-num.total { color: var(--primary); }
 
     .feedback-msg {
       grid-column: span 3;
-      margin-top: 10px;
+      margin-top: 8px;
       font-weight: bold;
       color: #555;
       border-top: 1px dashed #cbd5e1;
-      padding-top: 15px;
-      line-height: 1.6;
+      padding-top: 12px;
+      line-height: 1.5;
+      font-size: 14px;
     }
 
     @keyframes pulse {
       from { opacity: 1; } to { opacity: 0.7; }
     }
+
+    @media (max-width: 500px) {
+      .student-info-form { grid-template-columns: 1fr; }
+      .score-board { grid-template-columns: 1fr; }
+      .feedback-msg { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
 
+<div class="inapp-warning" id="inAppWarning">
+  ⚠️ 偵測到您正在使用 App 內建瀏覽器。<br>
+  請點擊右上角 **「⋮」** 或 **「分享」** 按鈕，選擇 **「在 Chrome / Safari 中開啟」** 以存取麥克風。
+</div>
+
 <div class="instructor-card">
   <h1>學生口說發音評分系統</h1>
+
+  <!-- 老師題庫設定區 -->
+  <div class="teacher-panel">
+    <div class="panel-title">📚 題庫切換與自訂（教師功能）</div>
+    <div class="teacher-actions">
+      <button class="btn-random" id="btnRandom5">🎲 隨機載入 5 句日常英語</button>
+      <label class="btn-file-label" for="fileInput">📁 上傳 text.txt 自訂題庫</label>
+      <input type="file" id="fileInput" accept=".txt" style="display: none;">
+    </div>
+    <div class="bank-status" id="bankStatus">目前題庫：預設格言題庫（共 6 條）</div>
+  </div>
 
   <!-- 1. 學生資訊填寫區 -->
   <div class="student-info-form">
@@ -252,11 +361,36 @@
 </div>
 
 <script>
-// 1. 請在此處填入您部署 Google Apps Script 後取得的網頁應用程式 URL
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxl86DfQJxa3rrIGX9fEFTz5sW-MYeZrH8Kvb1V5A8pyijeQjIVntKnfHCK8Na389O1/exec ";
+// 偵測內建瀏覽器 (LINE, Messenger, Teams 等)
+const ua = navigator.userAgent || navigator.vendor || window.opera;
+const isInApp = (ua.indexOf("Line") > -1) || (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("Teams") > -1);
+if (isInApp) {
+  document.getElementById('inAppWarning').style.display = 'block';
+}
 
-// 2. 練習題庫（可自行增減題目）
-const sentenceBank = [
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGKabME3C398ARfyvxRpsLDyJ9jZgcnYAApWy1yN9fU1K13sf1jM5nFNjqQUAfiwO2/exec";
+
+// 日常生活常用英語的大型資料庫（供隨機抽取 5 句使用）
+const dailyEnglishPool = [
+  "How are you doing today?",
+  "Could you speak a bit slower, please?",
+  "What do you plan to do this weekend?",
+  "Thank you for your help.",
+  "Have a nice day!",
+  "Nice to meet you.",
+  "What is your favorite food?",
+  "I am running a little bit late.",
+  "Could you please repeat that again?",
+  "Everything is going to be alright.",
+  "Let me know if you need anything.",
+  "How much does this item cost?",
+  "Where is the nearest subway station?",
+  "Could you take a picture for us?",
+  "I really appreciate your support."
+];
+
+// 預設題庫
+let sentenceBank = [
   "Practice makes perfect.",
   "Where there is a will, there is a way.",
   "The quick brown fox jumps over the lazy dog.",
@@ -271,7 +405,6 @@ let targetWords = [];
 let displayWords = [];
 let attemptCount = 0;
 
-// DOM 元素取得
 const studentClass = document.getElementById('studentClass');
 const studentId = document.getElementById('studentId');
 const studentName = document.getElementById('studentName');
@@ -279,12 +412,14 @@ const sentenceBox = document.getElementById('sentenceBox');
 const btnAudio = document.getElementById('btnAudio');
 const btnMic = document.getElementById('btnMic');
 const btnNext = document.getElementById('btnNext');
+const btnRandom5 = document.getElementById('btnRandom5');
+const fileInput = document.getElementById('fileInput');
+const bankStatus = document.getElementById('bankStatus');
 const attemptCountDisplay = document.getElementById('attemptCountDisplay');
 const completionScore = document.getElementById('completionScore');
 const accuracyScore = document.getElementById('accuracyScore');
 const feedbackMsg = document.getElementById('feedbackMsg');
 
-// 初始化與題目渲染函數
 function initSentence(sentenceText) {
   targetSentence = sentenceText;
   targetWords = targetSentence.toLowerCase().match(/\b[\w'-]+\b/g) || [];
@@ -301,21 +436,59 @@ function initSentence(sentenceText) {
   }).join('');
 }
 
-// 載入初始題目
+function resetScoresAndLoadFirst() {
+  currentSentenceIndex = 0;
+  initSentence(sentenceBank[0]);
+  completionScore.innerText = "0%";
+  accuracyScore.innerText = "0%";
+  attemptCount = 0;
+  attemptCountDisplay.innerText = "0次";
+  if (checkFormValidity()) {
+    feedbackMsg.innerText = `已成功載入新題庫（共 ${sentenceBank.length} 題），請點擊錄音開始練習。`;
+  }
+}
+
 initSentence(targetSentence);
 
-// 換一題按鈕事件
+// 功能 1：隨機增加 5 個日常生活常用英語句子
+btnRandom5.addEventListener('click', () => {
+  const shuffled = [...dailyEnglishPool].sort(() => 0.5 - Math.random());
+  sentenceBank = shuffled.slice(0, 5);
+  bankStatus.innerText = `目前題庫：隨機日常生活英語（共 5 條）`;
+  resetScoresAndLoadFirst();
+});
+
+// 功能 2：上傳 text.txt 檔自訂題庫
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const text = event.target.result;
+    const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+    
+    if (lines.length > 0) {
+      sentenceBank = lines;
+      bankStatus.innerText = `目前題庫：自訂檔案 ${file.name}（共 ${lines.length} 條）`;
+      resetScoresAndLoadFirst();
+    } else {
+      alert("上傳的文字檔內沒有有效英文句子！");
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+});
+
 btnNext.addEventListener('click', () => {
   currentSentenceIndex = (currentSentenceIndex + 1) % sentenceBank.length;
   initSentence(sentenceBank[currentSentenceIndex]);
   completionScore.innerText = "0%";
   accuracyScore.innerText = "0%";
   if (checkFormValidity()) {
-    feedbackMsg.innerText = `已切換至第 ${currentSentenceIndex + 1} 題，點擊錄音按鈕開始練習。`;
+    feedbackMsg.innerText = `已切換至第 ${currentSentenceIndex + 1} / ${sentenceBank.length} 題，點擊錄音按鈕開始練習。`;
   }
 });
 
-// 表單防呆驗證
 function checkFormValidity() {
   if (studentClass.value.trim() !== "" && studentId.value.trim() !== "" && studentName.value.trim() !== "") {
     btnMic.disabled = false;
@@ -335,36 +508,28 @@ function checkFormValidity() {
 });
 checkFormValidity();
 
-// 語音 TTS 設定
-let usMaleVoice = null;
-function loadVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  const usVoices = voices.filter(voice => voice.lang === 'en-US' || voice.lang === 'en_US');
-  usMaleVoice = usVoices.find(voice => {
-    const name = voice.name.toLowerCase();
-    return name.includes('male') || name.includes('david') || name.includes('mark') || name.includes('natural');
-  });
-  if (!usMaleVoice && usVoices.length > 0) usMaleVoice = usVoices[0];
-}
-
-loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) {
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-}
-
+// 手機與電腦相容的 TTS 語音朗讀
 btnAudio.addEventListener('click', () => {
-  loadVoices();
   const synth = window.speechSynthesis;
+  synth.cancel();
+
   const utterance = new SpeechSynthesisUtterance(targetSentence);
-  if (usMaleVoice) utterance.voice = usMaleVoice;
+  utterance.lang = 'en-US';
   utterance.rate = 0.85;
+
+  const voices = synth.getVoices();
+  if (voices.length > 0) {
+    const usVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en_US'));
+    if (usVoice) utterance.voice = usVoice;
+  }
+
   synth.speak(utterance);
 });
 
-// 語音辨識與評分演算法
+// 語音辨識機制
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (!SpeechRecognition) {
-  feedbackMsg.innerText = "不支援此瀏覽器，請切換至 Google Chrome 進行教學。";
+  feedbackMsg.innerText = "您的瀏覽器不支援語音辨識，請使用 Chrome 或 Safari 開啟。";
   btnMic.disabled = true;
 } else {
   const recognition = new SpeechRecognition();
@@ -445,7 +610,6 @@ if (!SpeechRecognition) {
   };
 }
 
-// 雲端同步函數
 function sendDataToGoogleSheet(completion, accuracy, transcript, currentAttempt, targetSentenceText) {
   const payload = {
     className: studentClass.value.trim(),
@@ -458,12 +622,7 @@ function sendDataToGoogleSheet(completion, accuracy, transcript, currentAttempt,
     transcript: transcript
   };
 
-  if (GAS_URL === "YOUR_GAS_WEB_APP_URL") {
-    feedbackMsg.innerHTML = `<span style="color:var(--danger)">請先在程式碼中將 const GAS_URL 替換為您正確的 Apps Script URL。</span>`;
-    return;
-  }
-
-  fetch(GAS_URL, {
+  fetch(GAS_URL, {https://script.google.com/macros/s/AKfycbxl86DfQJxa3rrIGX9fEFTz5sW-MYeZrH8Kvb1V5A8pyijeQjIVntKnfHCK8Na389O1/exec 
     method: "POST",
     mode: "no-cors",
     headers: { "Content-Type": "application/json" },
